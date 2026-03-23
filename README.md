@@ -10,7 +10,7 @@
 - `exit` -
 - `path` - 
 - `myhistory` -
-### Redirection, Pipelining, Signal Cotrol, and Alias:
+### Redirection, Pipelining, Signal Control, and Alias:
 - Shell Extension with I/O Redirection -
 - Shell Extension with Pipelining - 
 - Support Signal Handling and Terminal Control - 
