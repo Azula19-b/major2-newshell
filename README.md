@@ -6,15 +6,15 @@
 - Jeffrey Tei-Muno
 ## Project Organization: TBD
 ### Built-in Commands:
-- `cd` -
-- `exit` -
-- `path` - 
-- `myhistory` -
+- `cd` - Bahar
+- `exit` - Jeffrey
+- `path` - Christian
+- `myhistory` - Michael
 ### Redirection, Pipelining, Signal Control, and Alias:
-- Shell Extension with I/O Redirection -
-- Shell Extension with Pipelining - 
-- Support Signal Handling and Terminal Control - 
-- Implement a new `alias` command - 
+- Shell Extension with I/O Redirection - Bahar
+- Shell Extension with Pipelining - Jeffrey
+- Support Signal Handling and Terminal Control - Michael
+- Implement a new `alias` command - Christian
 ### Defensive Programming (Group Effort)
 - Error Cases: In `MajorAssignment_2.docx`
 ## Design Overview
