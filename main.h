@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 
 // Main Shell Functions/Runners
-int batchMode(char **argv);
+int batchMode(char *argv);
 int interactiveMode();
 
 // Built-In Command + Alias (Modify Functions as Needed)

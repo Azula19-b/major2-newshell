@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     return EXIT_SUCCESS;
 }
 
-int batchMode(char **argv) {
+int batchMode(char *argv) {
     int batchFile = open(argv[1], O_RDONLY); //Open Batch File
 
     if(batchFile < 0) {
