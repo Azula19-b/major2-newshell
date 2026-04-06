@@ -3,6 +3,9 @@
 
 int main(int argc, char **argv) {
     
+    //Signal Handler Setup
+    signal(SIGINT,handleSIGINT);
+
     if(argc == 2) {
         //run batch mode
         batchMode(argv[1]); //provide batch file path to batchMode function
