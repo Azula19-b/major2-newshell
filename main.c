@@ -1,6 +1,39 @@
 #include "main.h"
 
+
 int main(int argc, char **argv) {
- 
+    
+    if(argc == 2) {
+        //run batch mode
+        batchMode(argv[1]); //provide batch file path to batchMode function
+    }
+    else if(argc == 1) {
+        //run interactive mode
+        interactiveMode();
+    }
+    else {
+        // handle improper input
+        printf("usage: newshell [batchFile]");
+        return EXIT_FAILURE;
+    }
+
+
+    return EXIT_SUCCESS;
+}
+
+int batchMode(char **argv) {
+    int batchFile = open(argv[1], O_RDONLY); //Open Batch File
+
+    if(batchFile < 0) {
+        perror("Error: Failed to Open Batch File.\n");
+        return EXIT_FAILURE;
+    }
+}
+
+int interactiveMode() {
+    do {
+        printf("newshell:~> "); //put current file path here eventually
+
+    } while(false); // put exit command here
     return EXIT_SUCCESS;
 }
