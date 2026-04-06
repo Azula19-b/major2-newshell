@@ -12,10 +12,10 @@ int batchMode(char **argv);
 int interactiveMode();
 
 // Built-In Command + Alias (Modify Functions as Needed)
-int cd();
-int exit();
-int path();
-int myhistory();
-int alias();
+int cdCMD();
+int exitCMD();
+int pathCMD();
+int myhistoryCMD();
+int aliasCMD();
 
 //Redirection, Pipelining & Signal Control Definitions
