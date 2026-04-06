@@ -4,7 +4,9 @@
 int main(int argc, char **argv) {
     
     //Signal Handler Setup
-    signal(SIGINT,handleSIGINT);
+    signal(SIGINT,handleSignals);
+    signal(SIGTSTP,handleSignals);
+    signal(SIGTERM,handleSignals);
 
     if(argc == 2) {
         //run batch mode

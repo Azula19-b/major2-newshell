@@ -1,5 +1,5 @@
 #include "main.h"
 
-void handleSIGINT() {
+void handleSignals() {
     printf("Warning: Use exit to end the shell\n");
 }
