@@ -34,7 +34,7 @@ int batchMode(char *argv) {
 int interactiveMode() {
     do {
         printf("newshell:~> "); //put current file path here eventually
-
+        
     } while(false); // put exit command here
     return EXIT_SUCCESS;
 }
