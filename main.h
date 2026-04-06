@@ -20,4 +20,4 @@ int myhistoryCMD();
 int aliasCMD();
 
 //Redirection, Pipelining & Signal Control Definitions
-void handleSignals();
+void handleSignals(int iSig);
