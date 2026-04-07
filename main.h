@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 // Main Shell Functions/Runners
 int batchMode(char *argv);
@@ -19,3 +20,4 @@ int myhistoryCMD();
 int aliasCMD();
 
 //Redirection, Pipelining & Signal Control Definitions
+void handleSignals(int iSig);
