@@ -39,7 +39,30 @@ int batchMode(char *argv) {
 int interactiveMode() {
     do {
         printf("newshell:~> "); //put current file path here eventually
-        
+        char* line = getInputLine(); // Eventually pull input line into this variable
+        char** argv = getArgArr(line); //Array of strings not unlike what is given by the main function
+        int* argc = getArgCount(line); // Argument Count for argv
     } while(false); // put exit command here
     return EXIT_SUCCESS;
 }
+
+char* getInputLine() {
+
+}
+
+char** getArgArr(char* line) {
+
+}
+
+int getArgCount(char* line) {
+    int lineLength = strlen(line);
+    int ret = 0;
+    for(int i = 0; i < lineLength; i++) {
+        if(line[i] == ' ' || line[i] == '\0') {
+            ret++;
+        }
+    }
+
+    return ret;
+}
+
