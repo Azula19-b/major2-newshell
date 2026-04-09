@@ -13,8 +13,12 @@
 int batchMode(char *argv);
 int interactiveMode();
 char* getInputLine();
-int getArgCount(char *inputLine);
+int getArgCount(char **argv);
 char** getArgArr(char *inputLine);
+
+void executeCommands(char **argv, int argc);
+int* findPipes(char **argv, int argc);
+int* findRedirections(char **argv, int argc);
 
 // Built-In Command + Alias (Modify Functions as Needed)
 int cdCMD();
