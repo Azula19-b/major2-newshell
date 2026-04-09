@@ -72,9 +72,6 @@ void executeCommands(char **argv, int argc) {
     int *pipeIndecies = findPipes(argv,argc);
     int *redirectionIndecies = findRedirections(argv,argc);
 
-    // printf("Pipes: %i, %i\n", pipeIndecies[0], pipeIndecies[1]);
-    // printf("Redirect: Type %i, %i\n", redirectionIndecies[1],redirectionIndecies[0]);
-
     if(pipeIndecies[0] != -1 && pipeIndecies[1] == -1) {
         // Singular Pipe Found Case
         printf("One Pipe Found at argument: %i\n",pipeIndecies[0]);
@@ -83,14 +80,15 @@ void executeCommands(char **argv, int argc) {
         // Multi Pipe Case
         printf("Two Pipes Found at %i and %i\n",pipeIndecies[0],pipeIndecies[1]);
     }
-    else if(redirectionIndecies[0] != -1 && redirectionIndecies[0] != -1) {
-        // Redirection Case
-        printf("Found redirection Type %i at %i\n", redirectionIndecies[1], redirectionIndecies[0]);
+    else if(redirectionIndecies[0] != -1) {
+        // Bahar - handle I/O redirection for external commands
+        executeWithRedirection(argv, argc, redirectionIndecies[0], redirectionIndecies[1]);
     }
     else {
         // Normal Execution Case
-        if(strcmp(argv[0],"cd") == 0) {
-            // Run cd command
+        if(strcmp(argv[0], "cd") == 0) {
+            // Bahar - built-in cd must run in shell process
+            cdCMD(argv, argc);
         }
         else if(strcmp(argv[0],"myhistory") == 0) {
             // Run myhistory command
