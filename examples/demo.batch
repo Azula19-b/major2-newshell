@@ -1,0 +1,9 @@
+echo Welcome to newshell batch mode
+pwd
+echo "one two three" | wc -w
+alias greet echo Hello
+greet from an alias
+echo first-line > demo-output.txt
+echo second-line >> demo-output.txt
+cat demo-output.txt
+myhistory

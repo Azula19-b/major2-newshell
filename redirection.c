@@ -1,150 +1,95 @@
 #include "main.h"
-/*
- * Builds a new argument array without the redirection
- * symbol and its file name.
- * Example:
- * ls > out.txt  --->  cleanArgs = {"ls", NULL}
- */
-char **buildCleanArgs(char **argv, int argc, int redirectIndex) {
-    char **cleanArgs = malloc((argc + 1) * sizeof(char *));
-    int i;
-    int j = 0;
 
-    // Check memory allocation
-    if (cleanArgs == NULL) {
-        perror("Failed to allocate memory");
-        return NULL;
-    }
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-    for (i = 0; i < argc; i++) {
-        // Skip the redirection operator
-        if (i == redirectIndex) {
-            continue;
-        }
-
-        // Skip the file name after the operator
-        if (i == redirectIndex + 1) {
-            continue;
-        }
-        
-        // Copy normal command arguments
-        cleanArgs[j] = argv[i];
-        j++;
-    }
-
-    // End the new argument list
-    cleanArgs[j] = NULL;
-
-    return cleanArgs;
+static bool is_redirection(const char *token) {
+    return strcmp(token, "<") == 0 || strcmp(token, ">") == 0 ||
+           strcmp(token, ">>") == 0;
 }
 
-/*
- * Executes an external command with one redirection.
- *
- * redirectType:
- * 0 = output redirection (>)
- * 1 = input redirection  (<)
- */
-int executeWithRedirection(char **argv, int argc, int redirectIndex, int redirectType) {
-    pid_t pid;
-    int status = 0;
-    int fd;
-    char *fileName;
-    char **cleanArgs;
-
-    // Make sure a file name exists after < or >
-    if (redirectIndex + 1 >= argc) {
-        fprintf(stderr, "redirection error: missing file name\n");
-        return -1;
+int prepare_command(char **tokens, int start, int end, char ***arguments,
+                    Redirection *redirection) {
+    char **result = calloc((size_t)(end - start) + 1, sizeof(char *));
+    if (result == NULL) {
+        perror("newshell: allocation");
+        return 1;
     }
+    memset(redirection, 0, sizeof(*redirection));
 
-    // Built-in commands are not redirected in this project
-    if (strcmp(argv[0], "cd") == 0 ||
-        strcmp(argv[0], "exit") == 0 ||
-        strcmp(argv[0], "path") == 0 ||
-        strcmp(argv[0], "myhistory") == 0 ||
-        strcmp(argv[0], "alias") == 0) {
-        fprintf(stderr, "redirection error: built-in commands do not support redirection\n");
-        return -1;
-    }
-
-    // Store the target file name
-    fileName = argv[redirectIndex + 1];
-
-    // Build a clean argv for execvp()
-    cleanArgs = buildCleanArgs(argv, argc, redirectIndex);
-    if (cleanArgs == NULL) {
-        return -1;
-    }
-
-    // Create child process
-    pid = fork();
-
-    if (pid < 0) {
-        perror("fork");
-        free(cleanArgs);
-        return -1;
-    }
-
-    // Child process
-    if (pid == 0) {
-        // Child should use default signal behavior
-        signal(SIGINT, SIG_DFL);
-        signal(SIGTSTP, SIG_DFL);
-        signal(SIGTERM, SIG_DFL);
-
-        // Handle output redirection: command > file
-        if (redirectType == 0) {
-            fd = open(fileName, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-            if (fd < 0) {
-                perror("open output file");
-                exit(EXIT_FAILURE);
-            }
-
-            // Replace standard output with file
-            if (dup2(fd, STDOUT_FILENO) < 0) {
-                perror("dup2 output");
-                close(fd);
-                exit(EXIT_FAILURE);
-            }
+    int count = 0;
+    for (int index = start; index < end; ++index) {
+        if (!is_redirection(tokens[index])) {
+            result[count++] = tokens[index];
+            continue;
         }
-        // Handle input redirection: command < file
-        else if (redirectType == 1) {
-            fd = open(fileName, O_RDONLY);
-            if (fd < 0) {
-                perror("open input file");
-                exit(EXIT_FAILURE);
-            }
-
-            // Replace standard input with file
-            if (dup2(fd, STDIN_FILENO) < 0) {
-                perror("dup2 input");
-                close(fd);
-                exit(EXIT_FAILURE);
-            }
+        if (index + 1 >= end || is_redirection(tokens[index + 1]) ||
+            strcmp(tokens[index + 1], "|") == 0) {
+            fprintf(stderr, "newshell: redirection requires a file name\n");
+            free(result);
+            return 1;
         }
-        // Invalid redirection type
-        else {
-            fprintf(stderr, "redirection error: invalid redirection type\n");
-            exit(EXIT_FAILURE);
+        if (strcmp(tokens[index], "<") == 0) {
+            if (redirection->input_path != NULL) {
+                fprintf(stderr, "newshell: multiple input redirections are not supported\n");
+                free(result);
+                return 1;
+            }
+            redirection->input_path = tokens[index + 1];
+        } else {
+            if (redirection->output_path != NULL) {
+                fprintf(stderr, "newshell: multiple output redirections are not supported\n");
+                free(result);
+                return 1;
+            }
+            redirection->output_path = tokens[index + 1];
+            redirection->append = strcmp(tokens[index], ">>") == 0;
         }
-
-        // Close original file descriptor after dup2()
-        close(fd);
-
-        // Execute the external command
-        execvp(cleanArgs[0], cleanArgs);
-
-        // Only runs if execvp() fails
-        perror("execvp");
-        exit(EXIT_FAILURE);
+        ++index;
     }
+    result[count] = NULL;
+    if (count == 0) {
+        fprintf(stderr, "newshell: missing command\n");
+        free(result);
+        return 1;
+    }
+    *arguments = result;
+    return 0;
+}
 
-    // Parent waits for child to finish
-    waitpid(pid, &status, 0);
-
-    // Free allocated memory in parent
-    free(cleanArgs);
-
+int apply_redirections(const Redirection *redirection) {
+    if (redirection->input_path != NULL) {
+        int input = open(redirection->input_path, O_RDONLY);
+        if (input < 0) {
+            fprintf(stderr, "newshell: %s: %s\n", redirection->input_path,
+                    strerror(errno));
+            return 1;
+        }
+        if (dup2(input, STDIN_FILENO) < 0) {
+            perror("newshell: dup2 input");
+            close(input);
+            return 1;
+        }
+        close(input);
+    }
+    if (redirection->output_path != NULL) {
+        int flags = O_WRONLY | O_CREAT | (redirection->append ? O_APPEND : O_TRUNC);
+        int output = open(redirection->output_path, flags, 0644);
+        if (output < 0) {
+            fprintf(stderr, "newshell: %s: %s\n", redirection->output_path,
+                    strerror(errno));
+            return 1;
+        }
+        if (dup2(output, STDOUT_FILENO) < 0) {
+            perror("newshell: dup2 output");
+            close(output);
+            return 1;
+        }
+        close(output);
+    }
     return 0;
 }
